@@ -18,7 +18,7 @@
 
   // ──────────────── Map ────────────────
   const map = L.map("map", {
-    zoomControl: true,
+    zoomControl: false,        // pinch / scroll only — buttons crowd the HUD
     attributionControl: true,
     minZoom: 10,
     maxZoom: 18,
@@ -178,12 +178,25 @@
       b.classList.toggle("active", b.dataset.mode === mode)
     );
     Object.entries(panels).forEach(([k, el]) => el.classList.toggle("hidden", k !== mode));
+    document.body.classList.toggle("quiz-mode", mode === "place" || mode === "hood");
     clearMapLayers();
     if (mode === "explore") initExplore();
     if (mode === "place")   initPlaceQuiz();
     if (mode === "hood")    initHoodQuiz();
     if (mode === "subway")  initSubway();
     if (mode === "basics")  initBasics();
+    // Recompute Leaflet container size after the topbar collapse changes layout.
+    setTimeout(() => map.invalidateSize(), 50);
+  }
+
+  // ──────────────── Feedback splash ────────────────
+  // tone: "good" | "med" | "bad". Restarts the CSS animation cleanly.
+  function flashSplash(tone) {
+    const el = document.getElementById("splash");
+    if (!el) return;
+    el.className = "splash";
+    void el.offsetWidth;            // force reflow so the animation re-runs
+    el.classList.add(tone, "show");
   }
 
   // ──────────────── EXPLORE ────────────────
@@ -358,16 +371,18 @@
     State.place.totalMiss += d;
     if (State.place.best == null || d < State.place.best) State.place.best = d;
 
-    let label = "Way off";
-    if (d < 250)       { label = "Bullseye"; bumpStreak(+1); }
-    else if (d < 1500) { label = "Close";    bumpStreak(+1); }
-    else if (d < 5000) { label = "Right borough-ish"; }
-    else               { label = "Way off";  bumpStreak(-1); }
+    let label = "Way off", tone = "bad";
+    if (d < 250)       { label = "Bullseye";          tone = "good"; bumpStreak(+1); }
+    else if (d < 1500) { label = "Close";             tone = "good"; bumpStreak(+1); }
+    else if (d < 5000) { label = "Right borough-ish"; tone = "med"; }
+    else               { label = "Way off";           tone = "bad"; bumpStreak(-1); }
+
+    flashSplash(tone);
 
     renderPlaceHud(`
       <div class="hud-row">
         <div class="result-chip"><span class="marker">${fmtDistance(d)}</span>${label}.</div>
-        <button class="chip-btn" id="hud-next">Next ↗</button>
+        <button class="chip-btn attract" id="hud-next">Next ↗</button>
       </div>
     `);
     document.getElementById("hud-next").onclick = nextPlace;
@@ -401,13 +416,15 @@
     if (correct) bumpStreak(+1);
     else         bumpStreak(-1);
 
+    flashSplash(correct ? "good" : "bad");
+
     renderPlaceHud(`
       <div class="hud-row">
         <div class="result-chip">
           <span class="marker">${correct ? "↗" : "—"}</span>
           ${correct ? "Correct." : `Pin ${State.place.choices.findIndex((c) => c.name === target.name) + 1} was it.`}
         </div>
-        <button class="chip-btn" id="hud-next">Next ↗</button>
+        <button class="chip-btn attract" id="hud-next">Next ↗</button>
       </div>
     `);
     document.getElementById("hud-next").onclick = nextPlace;
@@ -464,7 +481,8 @@
   function answerHood(btn, choice, target) {
     const buttons = document.querySelectorAll("#hud-hood-choices button");
     buttons.forEach((b) => (b.disabled = true));
-    if (choice.name === target.name) {
+    const correct = choice.name === target.name;
+    if (correct) {
       btn.classList.add("correct");
       bumpStreak(+1);
     } else {
@@ -472,16 +490,19 @@
       buttons.forEach((b) => { if (b.textContent === target.name) b.classList.add("correct"); });
       bumpStreak(-1);
     }
+
+    flashSplash(correct ? "good" : "bad");
+
     // Append result chip + next button
     const card = hud.querySelector(".hud-card");
     card.innerHTML = `
-      <span class="ask">${choice.name === target.name ? "↗ Correct" : "— That was"}</span>
+      <span class="ask">${correct ? "↗ Correct" : "— That was"}</span>
       <span class="target">${target.name}</span>
       <span class="meta">${target.borough}</span>
     `;
     const row = document.createElement("div");
     row.className = "hud-row";
-    row.innerHTML = `<button class="chip-btn" id="hud-hood-next">Next hood ↗</button>`;
+    row.innerHTML = `<button class="chip-btn attract" id="hud-hood-next">Next hood ↗</button>`;
     hud.appendChild(row);
     document.getElementById("hud-hood-next").onclick = nextHood;
   }
@@ -534,7 +555,8 @@
       b.onclick = () => {
         opts.querySelectorAll("button").forEach((x) => (x.disabled = true));
         const fb = host.querySelector(".feedback");
-        if (c === q.a) {
+        const correct = c === q.a;
+        if (correct) {
           b.classList.add("correct");
           fb.innerHTML = `<span style="color:var(--fg-1)">↗ </span>${q.why}`;
           bumpStreak(+1);
@@ -544,6 +566,7 @@
           fb.innerHTML = `<span style="color:var(--fg-2)">— </span>${q.a}. ${q.why}`;
           bumpStreak(-1);
         }
+        flashSplash(correct ? "good" : "bad");
         setTimeout(renderSubwayQuiz, 4000);
       };
       opts.appendChild(b);
