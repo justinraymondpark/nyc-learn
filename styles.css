@@ -114,8 +114,11 @@ body {
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: minmax(0, 1fr) min(520px, 38vw);
   min-height: 0;
+}
+@media (min-width: 1600px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 600px; }
 }
 .map-wrap { position: relative; min-height: 0; border-right: 1px solid var(--border-divider); }
 #map { width: 100%; height: 100%; background: var(--bg); }
@@ -557,7 +560,8 @@ body {
 @media (max-width: 960px) {
   .topbar { grid-template-columns: 1fr 1fr; height: auto; padding: var(--space-4); }
   .topbar .wordmark { grid-column: 1 / -1; order: -1; text-align: left; padding-bottom: var(--space-2); }
-  .layout { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
+  /* Map gets 38% of the viewport on mobile; the interactive panel takes the rest. */
+  .layout { grid-template-columns: 1fr; grid-template-rows: 38vh minmax(0, 1fr); }
   .map-wrap { border-right: 0; border-bottom: 1px solid var(--border-divider); }
   .section { padding: var(--space-5) var(--space-4); }
 }

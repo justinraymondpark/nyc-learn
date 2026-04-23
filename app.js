@@ -3,21 +3,18 @@
 (function () {
   "use strict";
 
-  // ──────────────── Theme ────────────────
+  // ──────────────── Theme (state only, no map calls) ────────────────
   const root = document.documentElement;
   const THEME_KEY = "nyc.theme";
   function getTheme() { return root.getAttribute("data-theme") || "dark"; }
-  function setTheme(t) {
+  function applyThemeAttr(t) {
     root.setAttribute("data-theme", t);
     localStorage.setItem(THEME_KEY, t);
-    document.getElementById("theme-toggle").textContent = (t === "dark" ? "Light" : "Dark");
-    swapTileLayer(t);
+    const btn = document.getElementById("theme-toggle");
+    if (btn) btn.textContent = (t === "dark" ? "Light" : "Dark");
   }
-  // Restore saved theme (default dark — TCW canonical)
-  setTheme(localStorage.getItem(THEME_KEY) || "dark");
-  document.getElementById("theme-toggle").addEventListener("click", () => {
-    setTheme(getTheme() === "dark" ? "light" : "dark");
-  });
+  // Apply saved theme synchronously so the CSS doesn't flash.
+  applyThemeAttr(localStorage.getItem(THEME_KEY) || "dark");
 
   // ──────────────── Map ────────────────
   const map = L.map("map", {
@@ -28,26 +25,37 @@
   }).setView([40.758, -73.975], 12);
 
   let tileLayer = null;
+  let labelsLayer = null;
   function swapTileLayer(theme) {
-    if (tileLayer) map.removeLayer(tileLayer);
-    const url = theme === "light"
+    if (tileLayer)   { map.removeLayer(tileLayer);   tileLayer = null; }
+    if (labelsLayer) { map.removeLayer(labelsLayer); labelsLayer = null; }
+    const baseUrl = theme === "light"
       ? "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
-    tileLayer = L.tileLayer(url, {
+    tileLayer = L.tileLayer(baseUrl, {
       subdomains: "abcd",
       maxZoom: 19,
       attribution:
         '&copy; <a href="https://openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(map);
 
-    // Labels layer on top — keeps streets readable
-    if (window._labels) map.removeLayer(window._labels);
     const lblUrl = theme === "light"
       ? "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
       : "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png";
-    window._labels = L.tileLayer(lblUrl, { subdomains: "abcd", maxZoom: 19 }).addTo(map);
+    labelsLayer = L.tileLayer(lblUrl, { subdomains: "abcd", maxZoom: 19 }).addTo(map);
   }
   swapTileLayer(getTheme());
+
+  // Wire the toggle now that both pieces exist.
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const next = getTheme() === "dark" ? "light" : "dark";
+    applyThemeAttr(next);
+    swapTileLayer(next);
+  });
+
+  // Leaflet sometimes needs a nudge if its container resolved size after init.
+  setTimeout(() => map.invalidateSize(), 0);
+  window.addEventListener("resize", () => map.invalidateSize());
 
   // ──────────────── Time / Open chip ────────────────
   function updateTimeChip() {
