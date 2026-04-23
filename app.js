@@ -135,6 +135,8 @@
     if (State.pathLine)    { map.removeLayer(State.pathLine);    State.pathLine    = null; }
     if (State.hoodLayer)   { map.removeLayer(State.hoodLayer);   State.hoodLayer   = null; }
     map.off("click");
+    const hudEl = document.getElementById("map-hud");
+    if (hudEl) { hudEl.hidden = true; hudEl.innerHTML = ""; }
   }
   function lineColor() { return getTheme() === "light" ? "#000" : "#fff"; }
 
@@ -198,24 +200,22 @@
     `;
   }
 
+  // ──────────────── Map HUD helpers ────────────────
+  const hud = document.getElementById("map-hud");
+  function showHud(html) {
+    hud.innerHTML = html;
+    hud.hidden = false;
+  }
+  function hideHud() { hud.hidden = true; hud.innerHTML = ""; }
+
   // ──────────────── PLACE QUIZ ────────────────
   function initPlaceQuiz() {
     map.setView([40.740, -73.990], 11);
     if (State.place.remaining.length === 0) {
       State.place.remaining = shuffle(window.LANDMARKS.filter((l) => l.kind !== "neighborhood"));
     }
-    document.getElementById("place-result").textContent = "";
-    document.getElementById("place-result").className = "result";
     nextPlace();
     map.on("click", onPlaceGuess);
-    document.getElementById("place-next").onclick = () => { clearPlaceOverlays(); nextPlace(); };
-    document.getElementById("place-skip").onclick = () => {
-      clearPlaceOverlays();
-      const r = document.getElementById("place-result");
-      r.innerHTML = `<span class="marker">—</span>Skipped.`;
-      r.className = "result";
-      nextPlace();
-    };
   }
   function clearPlaceOverlays() {
     if (State.quizMarker)  { map.removeLayer(State.quizMarker);  State.quizMarker  = null; }
@@ -223,15 +223,33 @@
     if (State.pathLine)    { map.removeLayer(State.pathLine);    State.pathLine    = null; }
   }
   function nextPlace() {
+    clearPlaceOverlays();
     if (State.place.remaining.length === 0) {
       State.place.remaining = shuffle(window.LANDMARKS.filter((l) => l.kind !== "neighborhood"));
     }
     State.place.current = State.place.remaining.pop();
-    document.getElementById("place-prompt").innerHTML = `
-      <div class="ask">Click where this is</div>
-      <div class="target">${State.place.current.name}<span class="editorial" style="font-family:var(--font-editorial);font-style:italic;font-weight:300;color:var(--fg-3)">.</span></div>
-      <div class="meta">${State.place.current.kind}</div>
-    `;
+    renderPlaceHud();
+  }
+  function renderPlaceHud(resultHtml) {
+    const c = State.place.current;
+    showHud(`
+      <div class="hud-card">
+        <span class="ask">Click where</span>
+        <span class="target">${c.name}</span>
+        <span class="meta">${c.kind}</span>
+      </div>
+      ${resultHtml || `
+        <div class="hud-row">
+          <button class="chip-btn ghost" id="hud-skip">Skip</button>
+        </div>
+      `}
+    `);
+    if (!resultHtml) {
+      document.getElementById("hud-skip").onclick = () => {
+        clearPlaceOverlays();
+        nextPlace();
+      };
+    }
   }
   function onPlaceGuess(e) {
     if (!State.place.current || State.quizMarker) return;
@@ -255,13 +273,19 @@
     State.place.totalMiss += d;
     if (State.place.best == null || d < State.place.best) State.place.best = d;
 
-    const res = document.getElementById("place-result");
     let label = "Way off";
-    if (d < 250)       { label = "Bullseye"; bumpStreak(+1); res.className = "result good"; }
-    else if (d < 1500) { label = "Close";    bumpStreak(+1); res.className = "result good"; }
-    else if (d < 5000) { label = "Right borough-ish"; res.className = "result"; }
-    else               { label = "Way off";  bumpStreak(-1); res.className = "result bad"; }
-    res.innerHTML = `<span class="marker">${fmtDistance(d)}</span>${label}.`;
+    if (d < 250)       { label = "Bullseye"; bumpStreak(+1); }
+    else if (d < 1500) { label = "Close";    bumpStreak(+1); }
+    else if (d < 5000) { label = "Right borough-ish"; }
+    else               { label = "Way off";  bumpStreak(-1); }
+
+    renderPlaceHud(`
+      <div class="hud-row">
+        <div class="result-chip"><span class="marker">${fmtDistance(d)}</span>${label}.</div>
+        <button class="chip-btn" id="hud-next">Next ↗</button>
+      </div>
+    `);
+    document.getElementById("hud-next").onclick = nextPlace;
 
     document.getElementById("place-rounds").textContent = State.place.rounds;
     document.getElementById("place-avg").textContent = fmtDistance(State.place.totalMiss / State.place.rounds);
@@ -272,12 +296,9 @@
   function initHoodQuiz() {
     map.setView([40.730, -73.980], 12);
     nextHood();
-    document.getElementById("hood-next").onclick = nextHood;
   }
   function nextHood() {
     if (State.hoodLayer) { map.removeLayer(State.hoodLayer); State.hoodLayer = null; }
-    document.getElementById("hood-result").textContent = "";
-    document.getElementById("hood-result").className = "result";
 
     const pool = window.NEIGHBORHOODS;
     const target = pool[Math.floor(Math.random() * pool.length)];
@@ -291,8 +312,14 @@
 
     const others = shuffle(pool.filter((n) => n.name !== target.name)).slice(0, 3);
     const choices = shuffle([target, ...others]);
-    const host = document.getElementById("hood-choices");
-    host.innerHTML = "";
+
+    showHud(`
+      <div class="hud-card">
+        <span class="ask">Name this hood</span>
+      </div>
+      <div class="hud-choices" id="hud-hood-choices"></div>
+    `);
+    const host = document.getElementById("hud-hood-choices");
     choices.forEach((c) => {
       const btn = document.createElement("button");
       btn.textContent = c.name;
@@ -301,22 +328,28 @@
     });
   }
   function answerHood(btn, choice, target) {
-    document.querySelectorAll("#hood-choices button").forEach((b) => (b.disabled = true));
-    const res = document.getElementById("hood-result");
+    const buttons = document.querySelectorAll("#hud-hood-choices button");
+    buttons.forEach((b) => (b.disabled = true));
     if (choice.name === target.name) {
       btn.classList.add("correct");
-      res.innerHTML = `<span class="marker">↗</span>${target.name} — ${target.borough}.`;
-      res.className = "result good";
       bumpStreak(+1);
     } else {
       btn.classList.add("wrong");
-      document.querySelectorAll("#hood-choices button").forEach((b) => {
-        if (b.textContent === target.name) b.classList.add("correct");
-      });
-      res.innerHTML = `<span class="marker">—</span>That was ${target.name} (${target.borough}).`;
-      res.className = "result bad";
+      buttons.forEach((b) => { if (b.textContent === target.name) b.classList.add("correct"); });
       bumpStreak(-1);
     }
+    // Append result chip + next button
+    const card = hud.querySelector(".hud-card");
+    card.innerHTML = `
+      <span class="ask">${choice.name === target.name ? "↗ Correct" : "— That was"}</span>
+      <span class="target">${target.name}</span>
+      <span class="meta">${target.borough}</span>
+    `;
+    const row = document.createElement("div");
+    row.className = "hud-row";
+    row.innerHTML = `<button class="chip-btn" id="hud-hood-next">Next hood ↗</button>`;
+    hud.appendChild(row);
+    document.getElementById("hud-hood-next").onclick = nextHood;
   }
 
   // ──────────────── SUBWAY ────────────────

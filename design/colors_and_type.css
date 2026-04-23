@@ -67,8 +67,57 @@
   font-display: swap;
 }
 
-/* PP Editorial Old isn't bundled in this build — the editorial italic
-   token (--font-editorial) falls back to Georgia. */
+/* PP Editorial Old — the rare editorial italic accent. */
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Ultralight.woff2") format("woff2");
+  font-weight: 200; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-UltralightItalic.woff2") format("woff2");
+  font-weight: 200; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Thin.woff2") format("woff2");
+  font-weight: 250; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-ThinItalic.woff2") format("woff2");
+  font-weight: 250; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Light.woff2") format("woff2");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-LightItalic.woff2") format("woff2");
+  font-weight: 300; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Italic.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-Bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Old";
+  src: url("./fonts/PPEditorialOld-BoldItalic.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
 
 :root {
   /* ── Core palette ─────────────────────────────────────────────

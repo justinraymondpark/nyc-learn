@@ -41,6 +41,8 @@
   <main class="layout">
     <section class="map-wrap">
       <div id="map" aria-label="Interactive map of New York City"></div>
+      <!-- Map HUD: prompt + result + actions for quiz modes. Always visible. -->
+      <div class="map-hud" id="map-hud" hidden></div>
     </section>
 
     <aside class="sidebar" id="sidebar">
@@ -68,7 +70,7 @@
         </div>
       </div>
 
-      <!-- PLACE QUIZ -->
+      <!-- PLACE QUIZ — interaction is in the map HUD. Sidebar shows context + stats. -->
       <div class="panel section hidden" id="panel-place">
         <div class="section-head">
           <div>
@@ -76,14 +78,7 @@
             <h2>Where is it, exactly?</h2>
           </div>
         </div>
-        <p class="lede">You'll get a name. Click where you think it is — we'll measure how close you got.</p>
-
-        <div id="place-prompt" class="prompt"></div>
-        <div id="place-result" class="result" aria-live="polite"></div>
-        <div class="actions">
-          <button id="place-next" class="chip-btn">Next place ↗</button>
-          <button id="place-skip" class="chip-btn ghost">Skip</button>
-        </div>
+        <p class="lede">A name appears at the top of the map. Click on the map where you think it is — we'll measure how close you got.</p>
         <dl class="stats">
           <dt>Rounds</dt><dd id="place-rounds">0</dd>
           <dt>Avg miss</dt><dd id="place-avg">—</dd>
@@ -91,7 +86,7 @@
         </dl>
       </div>
 
-      <!-- HOOD QUIZ -->
+      <!-- HOOD QUIZ — choices live in the map HUD. -->
       <div class="panel section hidden" id="panel-hood">
         <div class="section-head">
           <div>
@@ -99,10 +94,7 @@
             <h2>Name the neighborhood.</h2>
           </div>
         </div>
-        <p class="lede">A neighborhood is highlighted on the map. Pick its name from the four below.</p>
-        <div class="choices" id="hood-choices"></div>
-        <div id="hood-result" class="result" aria-live="polite"></div>
-        <div class="actions"><button id="hood-next" class="chip-btn">Next hood ↗</button></div>
+        <p class="lede">A neighborhood is highlighted on the map. Pick its name from the choices on the map.</p>
       </div>
 
       <!-- SUBWAY -->

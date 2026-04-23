@@ -123,6 +123,96 @@ body {
 .map-wrap { position: relative; min-height: 0; border-right: 1px solid var(--border-divider); }
 #map { width: 100%; height: 100%; background: var(--bg); }
 
+/* ─── Map HUD: floating prompt + actions for quiz modes ───
+   Sits at the top of the map, always visible — no scrolling required
+   to play the game. */
+.map-hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 500;                 /* above tiles, below leaflet controls (1000) */
+  display: flex; flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-5);
+  background: var(--scrim-top-black);  /* fades from bg into transparent */
+  pointer-events: none;
+}
+.map-hud > * { pointer-events: auto; }
+
+.hud-card {
+  background: var(--bg);
+  border: 1px solid var(--border-divider);
+  border-radius: var(--radius-0);
+  padding: var(--space-3) var(--space-4);
+  display: flex; align-items: baseline; gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.hud-card .ask {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-ui);
+  text-transform: uppercase;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+.hud-card .target {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-large);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-display-tight);
+  color: var(--fg-1);
+  flex: 1;
+  min-width: 0;
+}
+.hud-card .meta {
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-ui);
+  color: var(--fg-3);
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+.hud-row {
+  display: flex; gap: var(--space-2);
+  flex-wrap: wrap; align-items: stretch;
+}
+.hud-row .result-chip {
+  background: var(--bg);
+  border: 1px solid var(--border-divider);
+  padding: var(--space-3) var(--space-4);
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.hud-row .result-chip .marker { color: var(--fg-2); }
+
+.hud-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.hud-choices button {
+  background: var(--bg);
+  border: 1px solid var(--border-divider);
+  border-radius: var(--radius-chip);
+  padding: var(--space-3) var(--space-3);
+  color: var(--fg-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-ui);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.hud-choices button:hover    { background: var(--surface-chip-hover); }
+.hud-choices button.correct  { outline: 1px solid var(--fg-1); background: var(--surface-chip-hover); }
+.hud-choices button.wrong    { color: var(--fg-3); text-decoration: line-through; }
+
 .sidebar {
   background: var(--bg);
   overflow-y: auto;
@@ -558,12 +648,48 @@ body {
 
 /* ─────────────── Responsive ─────────────── */
 @media (max-width: 960px) {
-  .topbar { grid-template-columns: 1fr 1fr; height: auto; padding: var(--space-4); }
-  .topbar .wordmark { grid-column: 1 / -1; order: -1; text-align: left; padding-bottom: var(--space-2); }
-  /* Map gets 38% of the viewport on mobile; the interactive panel takes the rest. */
-  .layout { grid-template-columns: 1fr; grid-template-rows: 38vh minmax(0, 1fr); }
+  /* One compact row: wordmark on the left, theme + streak on the right.
+     Drop the time/closed status chips on small screens — they're decorative. */
+  .topbar {
+    grid-template-columns: 1fr auto;
+    height: auto;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+  .topbar .left { display: none; }
+  .topbar .wordmark { text-align: left; font-size: var(--fs-body); }
+  .topbar .right { gap: var(--space-1); }
+
+  .modes-bar { padding: var(--space-2) var(--space-3); }
+  .modes-bar .chip-nav { padding: 6px 10px; font-size: 14px; }
+
+  /* Map ≈ 45% of the viewport, panel takes the rest — and the HUD on top of
+     the map keeps the active prompt visible without scrolling the panel. */
+  .layout { grid-template-columns: 1fr; grid-template-rows: 45vh minmax(0, 1fr); }
   .map-wrap { border-right: 0; border-bottom: 1px solid var(--border-divider); }
-  .section { padding: var(--space-5) var(--space-4); }
+
+  .section { padding: var(--space-4); }
+  .section-head { margin-bottom: var(--space-3); }
+  .section-head h2 { font-size: var(--fs-large); }
+  .lede { font-size: 14px; margin-bottom: var(--space-3); }
+
+  /* In quiz modes, collapse the header / lede so stats are visible without
+     scrolling. The HUD on the map handles the active prompt. */
+  #panel-place .section-head,
+  #panel-place .lede,
+  #panel-hood  .section-head,
+  #panel-hood  .lede { display: none; }
+
+  /* Hide the decorative ticker on phones to reclaim 49px. */
+  .ticker { display: none; }
+}
+
+@media (max-width: 480px) {
+  .map-hud { padding: var(--space-2) var(--space-2) var(--space-4); gap: var(--space-2); }
+  .hud-card { padding: 10px 12px; gap: 8px; }
+  .hud-card .target { font-size: var(--fs-body); }
+  .hud-row .result-chip { padding: 10px 12px; font-size: 14px; }
+  .hud-choices button { padding: 10px 12px; font-size: 14px; }
 }
 
 /* Modes bar — sits below the header, hairline-bordered */
