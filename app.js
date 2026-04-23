@@ -26,6 +26,25 @@
 
   let tileLayer = null;
   let labelsLayer = null;
+  let labelsVisible = true;       // hidden in quiz modes (otherwise labels reveal answers)
+  function addLabelsLayer() {
+    const lblUrl = getTheme() === "light"
+      ? "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png";
+    labelsLayer = L.tileLayer(lblUrl, { subdomains: "abcd", maxZoom: 19 }).addTo(map);
+  }
+  function setLabels(visible) {
+    labelsVisible = visible;
+    if (visible && !labelsLayer) addLabelsLayer();
+    else if (!visible && labelsLayer) { map.removeLayer(labelsLayer); labelsLayer = null; }
+  }
+  function setZoomBounds(min, max) {
+    map.setMinZoom(min);
+    map.setMaxZoom(max);
+    // If current zoom is outside the new bounds, snap it.
+    if (map.getZoom() > max) map.setZoom(max);
+    if (map.getZoom() < min) map.setZoom(min);
+  }
   function swapTileLayer(theme) {
     if (tileLayer)   { map.removeLayer(tileLayer);   tileLayer = null; }
     if (labelsLayer) { map.removeLayer(labelsLayer); labelsLayer = null; }
@@ -38,11 +57,7 @@
       attribution:
         '&copy; <a href="https://openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(map);
-
-    const lblUrl = theme === "light"
-      ? "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png";
-    labelsLayer = L.tileLayer(lblUrl, { subdomains: "abcd", maxZoom: 19 }).addTo(map);
+    if (labelsVisible) addLabelsLayer();
   }
   swapTileLayer(getTheme());
 
@@ -88,7 +103,13 @@
     truthMarker: null,
     pathLine: null,
     hoodLayer: null,
-    place: { remaining: [], current: null, rounds: 0, totalMiss: 0, best: null },
+    place: {
+      remaining: [], current: null,
+      rounds: 0, totalMiss: 0, best: null,
+      easyMode: localStorage.getItem("nyc.easy") === "true",
+      choices: [],         // easy-mode candidate landmarks (length 4)
+      easyMarkers: [],     // easy-mode numbered markers
+    },
     hood:  { current: null },
     streak: Number(localStorage.getItem("nyc.streak") || 0),
   };
@@ -167,6 +188,8 @@
 
   // ──────────────── EXPLORE ────────────────
   function initExplore() {
+    setLabels(true);
+    setZoomBounds(10, 18);
     map.setView([40.758, -73.975], 12);
     renderExploreMarkers();
     document.querySelectorAll('#panel-explore .filters input').forEach((cb) => {
@@ -210,17 +233,22 @@
 
   // ──────────────── PLACE QUIZ ────────────────
   function initPlaceQuiz() {
+    setLabels(false);          // labels would just give away the answers
+    setZoomBounds(11, 14);     // cap zoom — neighborhood-level only
     map.setView([40.740, -73.990], 11);
     if (State.place.remaining.length === 0) {
       State.place.remaining = shuffle(window.LANDMARKS.filter((l) => l.kind !== "neighborhood"));
     }
     nextPlace();
-    map.on("click", onPlaceGuess);
   }
   function clearPlaceOverlays() {
     if (State.quizMarker)  { map.removeLayer(State.quizMarker);  State.quizMarker  = null; }
     if (State.truthMarker) { map.removeLayer(State.truthMarker); State.truthMarker = null; }
     if (State.pathLine)    { map.removeLayer(State.pathLine);    State.pathLine    = null; }
+    State.place.easyMarkers.forEach((m) => map.removeLayer(m));
+    State.place.easyMarkers = [];
+    State.place.choices = [];
+    map.off("click");
   }
   function nextPlace() {
     clearPlaceOverlays();
@@ -228,29 +256,86 @@
       State.place.remaining = shuffle(window.LANDMARKS.filter((l) => l.kind !== "neighborhood"));
     }
     State.place.current = State.place.remaining.pop();
+    if (State.place.easyMode) {
+      setupEasyChoices(State.place.current);
+    } else {
+      map.on("click", onPlaceGuess);
+      map.setView([40.740, -73.990], 11);
+    }
     renderPlaceHud();
   }
+
+  // Pick 3 distractors of the same kind, drawn from spread distance bands
+  // so the choice is interesting: 1 near, 1 mid-range, 1 far / cross-borough.
+  function pickDistractors(target) {
+    const pool = window.LANDMARKS.filter(
+      (l) => l.kind === target.kind && l.name !== target.name
+    );
+    const t = [target.lat, target.lng];
+    const sorted = pool.map((l) => ({ l, d: distanceM(t, [l.lat, l.lng]) }));
+    const bands = [
+      sorted.filter((x) => x.d >=   800 && x.d <  3000),    // ~0.5–2 mi
+      sorted.filter((x) => x.d >=  3000 && x.d < 10000),    // ~2–6 mi
+      sorted.filter((x) => x.d >= 10000),                   // >6 mi (often cross-borough)
+    ];
+    const picked = [];
+    bands.forEach((band) => {
+      if (band.length) picked.push(band[Math.floor(Math.random() * band.length)].l);
+    });
+    // Backfill if some band was empty (rare for small kinds like "transit")
+    const remaining = pool.filter((l) => !picked.includes(l));
+    while (picked.length < 3 && remaining.length) {
+      picked.push(remaining.splice(Math.floor(Math.random() * remaining.length), 1)[0]);
+    }
+    return picked.slice(0, 3);
+  }
+
+  function setupEasyChoices(target) {
+    const distractors = pickDistractors(target);
+    const choices = shuffle([target, ...distractors]);
+    State.place.choices = choices;
+    choices.forEach((l, i) => {
+      const marker = L.marker([l.lat, l.lng], {
+        icon: L.divIcon({
+          className: "",
+          html: `<div class="easy-pin">${i + 1}</div>`,
+          iconSize: [34, 34], iconAnchor: [17, 17],
+        }),
+      });
+      marker.on("click", () => answerEasy(l, i, target));
+      marker.addTo(map);
+      State.place.easyMarkers.push(marker);
+    });
+    const bounds = L.latLngBounds(choices.map((l) => [l.lat, l.lng]));
+    map.fitBounds(bounds.pad(0.4));
+  }
+
   function renderPlaceHud(resultHtml) {
     const c = State.place.current;
+    const easy = State.place.easyMode;
     showHud(`
       <div class="hud-card">
-        <span class="ask">Click where</span>
+        <span class="ask">${easy ? "Which pin is" : "Click where"}</span>
         <span class="target">${c.name}</span>
         <span class="meta">${c.kind}</span>
       </div>
       ${resultHtml || `
         <div class="hud-row">
+          <button class="chip-btn ghost" id="hud-easy" aria-pressed="${easy}">${easy ? "Easy ●" : "Easy"}</button>
           <button class="chip-btn ghost" id="hud-skip">Skip</button>
         </div>
       `}
     `);
     if (!resultHtml) {
-      document.getElementById("hud-skip").onclick = () => {
-        clearPlaceOverlays();
+      document.getElementById("hud-easy").onclick = () => {
+        State.place.easyMode = !State.place.easyMode;
+        localStorage.setItem("nyc.easy", String(State.place.easyMode));
         nextPlace();
       };
+      document.getElementById("hud-skip").onclick = nextPlace;
     }
   }
+
   function onPlaceGuess(e) {
     if (!State.place.current || State.quizMarker) return;
     const guess = [e.latlng.lat, e.latlng.lng];
@@ -286,14 +371,63 @@
       </div>
     `);
     document.getElementById("hud-next").onclick = nextPlace;
+    updatePlaceStats();
+  }
 
+  function answerEasy(choice, idx, target) {
+    // Stop further pin clicks
+    State.place.easyMarkers.forEach((m) => m.off("click"));
+    const correct = choice.name === target.name;
+
+    // Mark each pin: correct one filled, picked-wrong dashed, others dimmed.
+    State.place.easyMarkers.forEach((m, i) => {
+      const el = m.getElement() && m.getElement().querySelector(".easy-pin");
+      if (!el) return;
+      const c = State.place.choices[i];
+      if (c.name === target.name)        el.classList.add("correct");
+      else if (i === idx)                el.classList.add("wrong");
+      else                               el.classList.add("dim");
+    });
+
+    if (!correct) {
+      // Open popup on the truth so the user sees what it was
+      const tm = State.place.easyMarkers.find(
+        (_, i) => State.place.choices[i].name === target.name
+      );
+      if (tm) tm.bindPopup(`<strong>${target.name}</strong>${target.blurb}`).openPopup();
+    }
+
+    State.place.rounds++;
+    if (correct) bumpStreak(+1);
+    else         bumpStreak(-1);
+
+    renderPlaceHud(`
+      <div class="hud-row">
+        <div class="result-chip">
+          <span class="marker">${correct ? "↗" : "—"}</span>
+          ${correct ? "Correct." : `Pin ${State.place.choices.findIndex((c) => c.name === target.name) + 1} was it.`}
+        </div>
+        <button class="chip-btn" id="hud-next">Next ↗</button>
+      </div>
+    `);
+    document.getElementById("hud-next").onclick = nextPlace;
+    updatePlaceStats();
+  }
+
+  function updatePlaceStats() {
     document.getElementById("place-rounds").textContent = State.place.rounds;
-    document.getElementById("place-avg").textContent = fmtDistance(State.place.totalMiss / State.place.rounds);
-    document.getElementById("place-best").textContent = fmtDistance(State.place.best);
+    if (State.place.totalMiss > 0) {
+      document.getElementById("place-avg").textContent = fmtDistance(State.place.totalMiss / State.place.rounds);
+    }
+    if (State.place.best != null) {
+      document.getElementById("place-best").textContent = fmtDistance(State.place.best);
+    }
   }
 
   // ──────────────── HOOD QUIZ ────────────────
   function initHoodQuiz() {
+    setLabels(false);
+    setZoomBounds(11, 14);
     map.setView([40.730, -73.980], 12);
     nextHood();
   }
@@ -354,6 +488,8 @@
 
   // ──────────────── SUBWAY ────────────────
   function initSubway() {
+    setLabels(true);
+    setZoomBounds(10, 18);
     map.setView([40.758, -73.985], 12);
     renderSubwayBullets();
     renderSubwayDetail(window.SUBWAY_LINES[0]);
@@ -416,6 +552,8 @@
 
   // ──────────────── BASICS ────────────────
   function initBasics() {
+    setLabels(true);
+    setZoomBounds(10, 18);
     map.setView([40.758, -73.975], 12);
     window.LANDMARKS.slice(0, 30).forEach((l) => {
       const m = L.marker([l.lat, l.lng], { icon: pinIcon(l.kind), opacity: .55 });

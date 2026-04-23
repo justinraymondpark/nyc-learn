@@ -631,6 +631,34 @@ body {
 [data-theme="light"] .pin.transit   { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--fg-1); }
 [data-theme="light"] .pin.neighborhood { box-shadow: 0 0 0 1.5px var(--fg-2); }
 
+/* Easy-mode numbered pins — neutral hairline circles you click. */
+.easy-pin {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--bg);
+  color: var(--fg-1);
+  border: 1.5px solid var(--fg-1);
+  display: grid; place-items: center;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+  box-shadow: 0 0 0 4px rgba(0,0,0,.35);
+}
+[data-theme="light"] .easy-pin { box-shadow: 0 0 0 4px rgba(253,252,250,.6); }
+.easy-pin:hover { transform: scale(1.08); background: var(--surface-chip); }
+.easy-pin.correct { background: var(--fg-1); color: var(--bg); border-color: var(--fg-1); }
+.easy-pin.wrong   { border-style: dashed; color: var(--fg-3); }
+.easy-pin.dim     { opacity: .35; }
+
+/* Toggle chip "pressed" indicator (for the Easy toggle in the HUD) */
+.chip-btn[aria-pressed="true"] {
+  background: var(--surface-chip);
+  color: var(--fg-1);
+  border-color: var(--fg-1);
+}
+
 /* Place-quiz dots — small data-color (the only color in the chrome). */
 .guess-dot {
   width: 12px; height: 12px; border-radius: 50%;
