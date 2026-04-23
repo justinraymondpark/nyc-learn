@@ -1,0 +1,330 @@
+/* ──────────────────────────────────────────────────────────────────
+   The Collected Works — 2026
+   Colors + Typography foundations
+   ────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-MediumItalic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-Heavy.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Saans TRIAL";
+  src: url("./fonts/SaansTRIAL-HeavyItalic.woff2") format("woff2");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* PP Editorial Old isn't bundled in this build — the editorial italic
+   token (--font-editorial) falls back to Georgia. */
+
+:root {
+  /* ── Core palette ─────────────────────────────────────────────
+     TCW's palette is almost exclusively black + white + grays.
+     No accent colors in the 2026 brand system. Bright color comes
+     only from client imagery.
+  */
+  --tcw-black:       rgb(0, 0, 0);
+  --tcw-white:       rgb(255, 255, 255);
+  --tcw-off-white:   rgb(253, 252, 250);   /* only used on text over imagery */
+  --tcw-paper:       rgb(245, 245, 245);   /* light backgrounds (rare) */
+  --tcw-hairline:    rgb(50, 50, 50);      /* the signature 1px dark divider */
+  --tcw-hairline-lt: rgb(204, 204, 204);   /* hairline on light surfaces */
+
+  /* ── Semantic: foreground on dark (default) ───────────────────
+     Almost all of the 2026 site runs on black. Opacity is THE device
+     for hierarchy — rather than introducing grays, text fades. */
+  --fg-1:            rgb(255, 255, 255);            /* primary */
+  --fg-2:            rgba(255, 255, 255, 0.60);     /* secondary / eyebrows / body */
+  --fg-3:            rgba(255, 255, 255, 0.30);     /* tertiary / disabled */
+  --fg-4:            rgba(255, 255, 255, 0.08);     /* glyphs on translucent chips */
+
+  /* ── Semantic: foreground on light (inverted surfaces) ───── */
+  --fg-1-on-light:   rgb(0, 0, 0);
+  --fg-2-on-light:   rgba(0, 0, 0, 0.60);
+  --fg-3-on-light:   rgba(0, 0, 0, 0.30);
+
+  /* ── Surfaces ─────────────────────────────────────────────── */
+  --bg:              rgb(0, 0, 0);                  /* default page */
+  --bg-inverted:     rgb(255, 255, 255);
+  --surface-raised:  rgba(255, 255, 255, 0.04);     /* card tiles */
+  --surface-whisper: rgba(255, 255, 255, 0.02);     /* faintest surface */
+  --surface-chip:    rgba(255, 255, 255, 0.08);     /* buttons, tags, nav items */
+  --surface-chip-hover: rgba(255, 255, 255, 0.14);  /* chip hover / active */
+  --surface-chip-hover-soft: rgba(255, 255, 255, 0.06);
+  --surface-chip-lt: rgba(0, 0, 0, 0.08);           /* same chip on light bg */
+
+  /* ── Borders ──────────────────────────────────────────────── */
+  --border-divider:  rgb(50, 50, 50);               /* the signature 1px */
+  --border-divider-lt: rgba(0, 0, 0, 0.10);
+  --border-ring:     rgba(255, 255, 255, 1);        /* clock rings, ID circles */
+
+  /* ── Live status dot ──────────────────────────────────────── */
+  --status-dot-filled: rgb(255, 255, 255);          /* "Open" */
+  --status-dot-empty:  transparent;                 /* "closed" (ring only) */
+
+  /* ── Typography ───────────────────────────────────────────── */
+  --font-sans:       "Saans TRIAL", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-editorial:  "PP Editorial Old", Georgia, "Times New Roman", serif;
+  --font-mono:       ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* Weights actually in use */
+  --fw-regular:      400;
+  --fw-medium:       500;   /* the workhorse — display + UI both use 500 */
+  --fw-heavy:        900;
+
+  /* Type scale (from Figma) */
+  --fs-micro:        12px;  /* eyebrow, small text, chips, nav labels */
+  --fs-body:         16px;  /* UI body, button text */
+  --fs-large:        20px;  /* lead paragraph (logo wordmark sits here too) */
+  --fs-section:      24px;  /* section starters */
+  --fs-heading:      32px;  /* page section titles */
+  --fs-display-s:    36px;  /* About paragraph / medium display */
+  --fs-display:      48px;  /* Hero / XL display / emphasis modules */
+  --fs-display-xl:   72px;  /* reserved huge headlines */
+
+  /* Tracking (letter-spacing) */
+  --tracking-display: -0.020em;   /* all display type is slightly negative */
+  --tracking-ui:      0.020em;    /* micro + eyebrow lift slightly */
+  --tracking-normal:  0em;
+
+  /* Leading (line-height) */
+  --lh-display:      1.06;    /* 48px hero */
+  --lh-display-tight:1.10;    /* 32–48px display */
+  --lh-paragraph:    1.20;    /* display-s paragraphs + small text */
+  --lh-ui:           1.40;    /* buttons, nav labels */
+
+  /* ── Spacing (Figma inspection — 4 / 8 / 10 / 20 / 40 / 60 / 80 / 120) ── */
+  --space-0:         0;
+  --space-1:         4px;
+  --space-2:         8px;
+  --space-3:         10px;
+  --space-4:         16px;
+  --space-5:         20px;
+  --space-6:         40px;   /* primary gutter — columns, padding */
+  --space-7:         60px;   /* section inner gap */
+  --space-8:         80px;
+  --space-9:         120px;  /* section top padding */
+  --space-10:        160px;
+
+  /* Grid / layout */
+  --page-width:      1728px;
+  --page-gutter:     40px;
+  --header-height:   76px;
+
+  /* ── Radii — exactly two values used in the system ────────── */
+  --radius-0:        0;
+  --radius-chip:     4px;    /* buttons, tags, nav items — everything small */
+  --radius-pill:     9999px;
+
+  /* ── Shadows ──────────────────────────────────────────────── */
+  /* None. TCW uses hairlines and gradient masks instead of drop shadows. */
+  --shadow-none:     none;
+
+  /* ── Protection gradients (used to fade content at tile edges) ── */
+  --scrim-top-black: linear-gradient(rgb(0,0,0) 0%, rgba(0,0,0,0) 100%);
+  --scrim-bot-black: linear-gradient(rgba(0,0,0,0) 0%, rgb(0,0,0) 100%);
+
+  /* ── Motion ───────────────────────────────────────────────── */
+  --ease-out:        cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out:     cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:        120ms;
+  --dur-base:        240ms;
+  --dur-slow:        480ms;
+}
+
+/* ── Light theme override ─────────────────────────────────────────
+   Apply by setting `data-theme="light"` on <html>, a section, or any
+   scoped container. Inverts the entire token stack so every component
+   that reads from CSS vars flips automatically.
+
+   Light mode on TCW is not pure-white; it's a warm off-white (paper)
+   to avoid the clinical feel. Hairlines become a soft black at 10%.
+   Text hierarchy still works on opacity, just against black. */
+[data-theme="light"] {
+  --tcw-hairline:    rgba(0, 0, 0, 0.10);
+
+  --fg-1:            rgb(0, 0, 0);
+  --fg-2:            rgba(0, 0, 0, 0.60);
+  --fg-3:            rgba(0, 0, 0, 0.30);
+  --fg-4:            rgba(0, 0, 0, 0.08);
+
+  --bg:              rgb(253, 252, 250);   /* paper off-white */
+  --bg-inverted:     rgb(0, 0, 0);
+  --surface-raised:  rgba(0, 0, 0, 0.03);
+  --surface-whisper: rgba(0, 0, 0, 0.015);
+  --surface-chip:    rgba(0, 0, 0, 0.06);
+  --surface-chip-hover: rgba(0, 0, 0, 0.12);
+  --surface-chip-hover-soft: rgba(0, 0, 0, 0.04);
+
+  --border-divider:  rgba(0, 0, 0, 0.12);
+  --border-ring:     rgb(0, 0, 0);
+
+  --status-dot-filled: rgb(0, 0, 0);
+  --status-dot-empty:  transparent;
+
+  /* Scrims need to fade to paper, not black */
+  --scrim-top-black: linear-gradient(rgb(253,252,250) 0%, rgba(253,252,250,0) 100%);
+  --scrim-bot-black: linear-gradient(rgba(253,252,250,0) 0%, rgb(253,252,250) 100%);
+}
+
+html, body { background: var(--bg); color: var(--fg-1); transition: background 240ms var(--ease-out), color 240ms var(--ease-out); }
+
+/* ──────────────────────────────────────────────────────────────────
+   Semantic type classes. These map directly to the TCW Figma styles.
+   ────────────────────────────────────────────────────────────────── */
+
+.tcw-type {
+  font-family: var(--font-sans);
+  color: var(--fg-1);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+/* Eyebrow / small label — the tiny 12px all-over-the-site label.
+   Uppercase is optional; in the real site both "About TCW" (title-cased)
+   and "AN INDEPENDENT DESIGN STUDIO" (all-caps) appear at this size. */
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-paragraph);
+  letter-spacing: var(--tracking-ui);
+  color: var(--fg-2);
+}
+
+/* Small text body — 12px running text (used in captions, tags, footer columns) */
+.t-small {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-micro);
+  line-height: var(--lh-paragraph);
+  letter-spacing: var(--tracking-ui);
+  color: var(--fg-2);
+}
+
+/* UI / button / nav text — 16px */
+.t-ui {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-body);
+  line-height: var(--lh-ui);
+  color: var(--fg-2);
+}
+
+/* Large paragraph — used on project pages (20px) */
+.t-body {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-large);
+  line-height: var(--lh-paragraph);
+  color: var(--fg-1);
+}
+
+/* Section titles — 32px (the "Featured Work", "Studio At a Glance" row titles) */
+.t-section,
+h2.tcw-h2 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-heading);
+  line-height: var(--lh-display-tight);
+  color: var(--fg-1);
+}
+
+/* Display (About paragraph) — 36px medium */
+.t-display-s {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-display-s);
+  line-height: var(--lh-paragraph);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg-1);
+}
+
+/* XL Display — 48px medium. Hero "Rad Work for Rad People." lives here. */
+.t-display,
+h1.tcw-h1 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg-1);
+}
+
+/* Editorial italic — used occasionally as a pull / quote accent (PP Editorial Old Light Italic 24px). */
+.t-editorial {
+  font-family: var(--font-editorial);
+  font-weight: 300;
+  font-style: italic;
+  font-size: var(--fs-section);
+  line-height: var(--lh-paragraph);
+  color: var(--fg-1);
+}
+
+/* Wordmark — the "The Collected Works" center-header lockup, 20px medium */
+.t-wordmark {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-large);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tracking-display);
+  color: var(--fg-1);
+}
+
+/* Reset helpers */
+html, body { background: var(--bg); color: var(--fg-1); font-family: var(--font-sans); }
+body { margin: 0; }
+* { box-sizing: border-box; }

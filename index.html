@@ -1,67 +1,88 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NYC Compass — learn the city</title>
+  <title>NYC Compass — Learn the City.</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin="" />
+  <link rel="stylesheet" href="design/colors_and_type.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="logo">◆</span>
-      <div>
-        <h1>NYC Compass</h1>
-        <p class="tag">Learn the city you live in.</p>
-      </div>
+    <div class="left">
+      <span class="chip-status" id="time-chip" aria-label="Current time in New York">--:--</span>
+      <span class="chip-status" id="open-chip">
+        <span class="status-dot" id="open-dot"></span><span id="open-label">Open</span>
+      </span>
     </div>
-    <nav class="modes" role="tablist" aria-label="Mode">
-      <button class="mode active" data-mode="explore" role="tab">Explore</button>
-      <button class="mode" data-mode="place" role="tab">Place Quiz</button>
-      <button class="mode" data-mode="hood" role="tab">Hood Quiz</button>
-      <button class="mode" data-mode="subway" role="tab">Subway</button>
-      <button class="mode" data-mode="basics" role="tab">NYC 101</button>
-    </nav>
-    <div class="score">
-      <span id="score-label">Streak</span>
-      <strong id="score-value">0</strong>
+
+    <div class="wordmark">NYC&nbsp;Compass<span class="editorial">.</span></div>
+
+    <div class="right">
+      <button class="chip-nav" id="theme-toggle" aria-pressed="false" title="Switch theme">Light</button>
+      <span class="chip-status" aria-label="Streak">
+        <span style="opacity:.6">Streak</span>
+        <strong id="score-value" style="font-weight:500">0</strong>
+      </span>
     </div>
   </header>
+
+  <nav class="modes-bar" role="tablist" aria-label="Mode">
+    <button class="chip-nav active" data-mode="explore"  role="tab">Explore</button>
+    <button class="chip-nav"        data-mode="place"    role="tab">Place Quiz</button>
+    <button class="chip-nav"        data-mode="hood"     role="tab">Hood Quiz</button>
+    <button class="chip-nav"        data-mode="subway"   role="tab">Subway</button>
+    <button class="chip-nav"        data-mode="basics"   role="tab">NYC 101</button>
+  </nav>
 
   <main class="layout">
     <section class="map-wrap">
       <div id="map" aria-label="Interactive map of New York City"></div>
-      <div class="map-overlay" id="overlay" hidden></div>
     </section>
 
     <aside class="sidebar" id="sidebar">
-      <!-- Panels get swapped in by app.js -->
-      <div class="panel" id="panel-explore">
-        <h2>Explore</h2>
-        <p class="lede">Every pin is a place New Yorkers talk about. Click one.</p>
-        <div class="filters">
-          <label><input type="checkbox" value="landmark" checked> Landmarks</label>
-          <label><input type="checkbox" value="museum" checked> Museums</label>
-          <label><input type="checkbox" value="park" checked> Parks</label>
-          <label><input type="checkbox" value="transit" checked> Transit</label>
-          <label><input type="checkbox" value="neighborhood"> Neighborhoods</label>
+
+      <!-- EXPLORE -->
+      <div class="panel section" id="panel-explore">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Explore</p>
+            <h2>Pin the city.</h2>
+          </div>
         </div>
-        <div id="explore-details" class="details" aria-live="polite">
+        <p class="lede">Every dot is a place New Yorkers actually talk about — landmarks, museums, parks, transit nodes. Tap one for the <em>why-it-matters</em>.</p>
+
+        <div class="filters">
+          <label class="filter-chip"><input type="checkbox" value="landmark" checked><span class="swatch"></span>Landmarks</label>
+          <label class="filter-chip"><input type="checkbox" value="museum" checked><span class="swatch"></span>Museums</label>
+          <label class="filter-chip"><input type="checkbox" value="park" checked><span class="swatch"></span>Parks</label>
+          <label class="filter-chip"><input type="checkbox" value="transit" checked><span class="swatch"></span>Transit</label>
+          <label class="filter-chip"><input type="checkbox" value="neighborhood"><span class="swatch"></span>Neighborhoods</label>
+        </div>
+
+        <div id="explore-details" class="tile" aria-live="polite">
           <p class="hint">Pick a pin to see what it is and why it matters.</p>
         </div>
       </div>
 
-      <div class="panel hidden" id="panel-place">
-        <h2>Place Quiz</h2>
-        <p class="lede">You'll get a name. Click where you think it is. We'll score you by how close you were.</p>
+      <!-- PLACE QUIZ -->
+      <div class="panel section hidden" id="panel-place">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Place Quiz</p>
+            <h2>Where is it, exactly?</h2>
+          </div>
+        </div>
+        <p class="lede">You'll get a name. Click where you think it is — we'll measure how close you got.</p>
+
         <div id="place-prompt" class="prompt"></div>
         <div id="place-result" class="result" aria-live="polite"></div>
         <div class="actions">
-          <button id="place-next" class="primary">Next place →</button>
-          <button id="place-skip" class="ghost">Skip</button>
+          <button id="place-next" class="chip-btn">Next place ↗</button>
+          <button id="place-skip" class="chip-btn ghost">Skip</button>
         </div>
         <dl class="stats">
           <dt>Rounds</dt><dd id="place-rounds">0</dd>
@@ -70,33 +91,55 @@
         </dl>
       </div>
 
-      <div class="panel hidden" id="panel-hood">
-        <h2>Hood Quiz</h2>
-        <p class="lede">A neighborhood is highlighted on the map. Name it.</p>
+      <!-- HOOD QUIZ -->
+      <div class="panel section hidden" id="panel-hood">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Hood Quiz</p>
+            <h2>Name the neighborhood.</h2>
+          </div>
+        </div>
+        <p class="lede">A neighborhood is highlighted on the map. Pick its name from the four below.</p>
         <div class="choices" id="hood-choices"></div>
         <div id="hood-result" class="result" aria-live="polite"></div>
-        <button id="hood-next" class="primary">Next hood →</button>
+        <div class="actions"><button id="hood-next" class="chip-btn">Next hood ↗</button></div>
       </div>
 
-      <div class="panel hidden" id="panel-subway">
-        <h2>Subway</h2>
-        <p class="lede">The only 24/7 system in the US. 472 stations. Learn the lines.</p>
+      <!-- SUBWAY -->
+      <div class="panel section hidden" id="panel-subway">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Subway</p>
+            <h2>The world's biggest 24/7 system.</h2>
+          </div>
+        </div>
+        <p class="lede"><em>472 stations.</em> Every line is a color, every color is a fact. Tap a bullet.</p>
         <div class="lines" id="subway-lines"></div>
-        <div id="subway-detail" class="details"></div>
-        <h3>Quick quiz</h3>
-        <div id="subway-quiz" class="subway-quiz"></div>
+        <div id="subway-detail" class="tile"></div>
+
+        <div style="margin-top: var(--space-6);">
+          <p class="eyebrow">Quick quiz</p>
+          <div id="subway-quiz" class="subway-quiz tile" style="margin-top: var(--space-2);"></div>
+        </div>
       </div>
 
-      <div class="panel hidden" id="panel-basics">
-        <h2>NYC 101</h2>
-        <p class="lede">The stuff locals just know. Flip a card.</p>
+      <!-- BASICS -->
+      <div class="panel section hidden" id="panel-basics">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">NYC 101</p>
+            <h2>The stuff locals just know.</h2>
+          </div>
+        </div>
+        <p class="lede">Tap to flip. Answers are short, opinionated, and mostly correct.</p>
         <div class="cards" id="basics-cards"></div>
       </div>
+
     </aside>
   </main>
 
-  <footer class="footnote">
-    Map © OpenStreetMap contributors. Data curated by hand — corrections welcome.
+  <footer class="ticker" aria-hidden="true">
+    <div class="track" id="ticker-track"></div>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
