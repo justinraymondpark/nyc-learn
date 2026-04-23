@@ -106,7 +106,8 @@
     place: {
       remaining: [], current: null,
       rounds: 0, totalMiss: 0, best: null,
-      easyMode: localStorage.getItem("nyc.easy") === "true",
+      // Default ON. Only treats an explicit "false" as opt-out so the chip-toggle still wins.
+      easyMode: localStorage.getItem("nyc.easy") !== "false",
       choices: [],         // easy-mode candidate landmarks (length 4)
       easyMarkers: [],     // easy-mode numbered markers
     },
@@ -138,12 +139,19 @@
   function bumpStreak(delta) {
     State.streak = Math.max(0, State.streak + delta);
     localStorage.setItem("nyc.streak", String(State.streak));
-    document.getElementById("score-value").textContent = State.streak;
-    // Mirror into the in-quiz stats strip
+    const sv = document.getElementById("score-value");
     const ps = document.getElementById("place-streak");
     const hs = document.getElementById("hood-streak");
+    if (sv) sv.textContent = State.streak;
     if (ps) ps.textContent = State.streak;
     if (hs) hs.textContent = State.streak;
+    if (delta > 0) {
+      [sv, ps, hs].filter(Boolean).forEach((el) => {
+        el.classList.remove("flash");
+        void el.offsetWidth;            // restart the animation
+        el.classList.add("flash");
+      });
+    }
   }
   function shuffle(arr) {
     const a = arr.slice();

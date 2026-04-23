@@ -262,6 +262,14 @@ body {
   font-weight: 300;
   color: var(--fg-1);
 }
+.legacy-link {
+  color: var(--fg-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-divider);
+  margin-left: var(--space-2);
+  white-space: nowrap;
+}
+.legacy-link:hover { color: var(--fg-1); border-color: var(--fg-1); }
 
 .panel.hidden { display: none; }
 
@@ -613,8 +621,17 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .splash.show, .chip-btn.attract { animation: none; }
+  .splash.show, .chip-btn.attract, .flash { animation: none; }
 }
+
+/* Score juice — a brief sage flash on stat values when a point is earned.
+   Same sage as the "good" splash for tonal consistency. */
+@keyframes scoreFlash {
+  0%   { color: var(--fg-1); transform: translateY(0); }
+  20%  { color: rgb(146, 196, 168); transform: translateY(-1px); }
+  100% { color: var(--fg-1); transform: translateY(0); }
+}
+.flash { animation: scoreFlash 800ms var(--ease-out); display: inline-block; }
 
 /* ─────────────── Quiz-mode topbar collapse ───────────────
    In Place / Neighborhood quizzes the wordmark + status chips eat too
