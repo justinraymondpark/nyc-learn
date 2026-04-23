@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NYC Compass — learn the city</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>NYC Compass</h1>
+        <p class="tag">Learn the city you live in.</p>
+      </div>
+    </div>
+    <nav class="modes" role="tablist" aria-label="Mode">
+      <button class="mode active" data-mode="explore" role="tab">Explore</button>
+      <button class="mode" data-mode="place" role="tab">Place Quiz</button>
+      <button class="mode" data-mode="hood" role="tab">Hood Quiz</button>
+      <button class="mode" data-mode="subway" role="tab">Subway</button>
+      <button class="mode" data-mode="basics" role="tab">NYC 101</button>
+    </nav>
+    <div class="score">
+      <span id="score-label">Streak</span>
+      <strong id="score-value">0</strong>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="map-wrap">
+      <div id="map" aria-label="Interactive map of New York City"></div>
+      <div class="map-overlay" id="overlay" hidden></div>
+    </section>
+
+    <aside class="sidebar" id="sidebar">
+      <!-- Panels get swapped in by app.js -->
+      <div class="panel" id="panel-explore">
+        <h2>Explore</h2>
+        <p class="lede">Every pin is a place New Yorkers talk about. Click one.</p>
+        <div class="filters">
+          <label><input type="checkbox" value="landmark" checked> Landmarks</label>
+          <label><input type="checkbox" value="museum" checked> Museums</label>
+          <label><input type="checkbox" value="park" checked> Parks</label>
+          <label><input type="checkbox" value="transit" checked> Transit</label>
+          <label><input type="checkbox" value="neighborhood"> Neighborhoods</label>
+        </div>
+        <div id="explore-details" class="details" aria-live="polite">
+          <p class="hint">Pick a pin to see what it is and why it matters.</p>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="panel-place">
+        <h2>Place Quiz</h2>
+        <p class="lede">You'll get a name. Click where you think it is. We'll score you by how close you were.</p>
+        <div id="place-prompt" class="prompt"></div>
+        <div id="place-result" class="result" aria-live="polite"></div>
+        <div class="actions">
+          <button id="place-next" class="primary">Next place →</button>
+          <button id="place-skip" class="ghost">Skip</button>
+        </div>
+        <dl class="stats">
+          <dt>Rounds</dt><dd id="place-rounds">0</dd>
+          <dt>Avg miss</dt><dd id="place-avg">—</dd>
+          <dt>Best</dt><dd id="place-best">—</dd>
+        </dl>
+      </div>
+
+      <div class="panel hidden" id="panel-hood">
+        <h2>Hood Quiz</h2>
+        <p class="lede">A neighborhood is highlighted on the map. Name it.</p>
+        <div class="choices" id="hood-choices"></div>
+        <div id="hood-result" class="result" aria-live="polite"></div>
+        <button id="hood-next" class="primary">Next hood →</button>
+      </div>
+
+      <div class="panel hidden" id="panel-subway">
+        <h2>Subway</h2>
+        <p class="lede">The only 24/7 system in the US. 472 stations. Learn the lines.</p>
+        <div class="lines" id="subway-lines"></div>
+        <div id="subway-detail" class="details"></div>
+        <h3>Quick quiz</h3>
+        <div id="subway-quiz" class="subway-quiz"></div>
+      </div>
+
+      <div class="panel hidden" id="panel-basics">
+        <h2>NYC 101</h2>
+        <p class="lede">The stuff locals just know. Flip a card.</p>
+        <div class="cards" id="basics-cards"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footnote">
+    Map © OpenStreetMap contributors. Data curated by hand — corrections welcome.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script src="data/landmarks.js"></script>
+  <script src="data/neighborhoods.js"></script>
+  <script src="data/subway.js"></script>
+  <script src="data/basics.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
