@@ -33,7 +33,7 @@
   <nav class="modes-bar" role="tablist" aria-label="Mode">
     <button class="chip-nav active" data-mode="explore"  role="tab">Explore</button>
     <button class="chip-nav"        data-mode="place"    role="tab">Place Quiz</button>
-    <button class="chip-nav"        data-mode="hood"     role="tab">Hood Quiz</button>
+    <button class="chip-nav"        data-mode="hood"     role="tab">Neighborhood Quiz</button>
     <button class="chip-nav"        data-mode="subway"   role="tab">Subway</button>
     <button class="chip-nav"        data-mode="basics"   role="tab">NYC 101</button>
   </nav>
@@ -80,21 +80,26 @@
         </div>
         <p class="lede">A name appears at the top of the map. Click on the map where you think it is — we'll measure how close you got.</p>
         <dl class="stats">
-          <dt>Rounds</dt><dd id="place-rounds">0</dd>
-          <dt>Avg miss</dt><dd id="place-avg">—</dd>
-          <dt>Best</dt><dd id="place-best">—</dd>
+          <div class="stat"><dt>Rounds</dt><dd id="place-rounds">0</dd></div>
+          <div class="stat"><dt>Avg miss</dt><dd id="place-avg">—</dd></div>
+          <div class="stat"><dt>Best</dt><dd id="place-best">—</dd></div>
+          <div class="stat"><dt>Streak</dt><dd id="place-streak">0</dd></div>
         </dl>
       </div>
 
-      <!-- HOOD QUIZ — choices live in the map HUD. -->
+      <!-- NEIGHBORHOOD QUIZ — choices live in the map HUD. -->
       <div class="panel section hidden" id="panel-hood">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Hood Quiz</p>
+            <p class="eyebrow">Neighborhood Quiz</p>
             <h2>Name the neighborhood.</h2>
           </div>
         </div>
         <p class="lede">A neighborhood is highlighted on the map. Pick its name from the choices on the map.</p>
+        <dl class="stats">
+          <div class="stat"><dt>Rounds</dt><dd id="hood-rounds">0</dd></div>
+          <div class="stat"><dt>Streak</dt><dd id="hood-streak">0</dd></div>
+        </dl>
       </div>
 
       <!-- SUBWAY -->

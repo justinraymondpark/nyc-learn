@@ -110,7 +110,7 @@
       choices: [],         // easy-mode candidate landmarks (length 4)
       easyMarkers: [],     // easy-mode numbered markers
     },
-    hood:  { current: null },
+    hood:  { current: null, rounds: 0 },
     streak: Number(localStorage.getItem("nyc.streak") || 0),
   };
   document.getElementById("score-value").textContent = State.streak;
@@ -139,6 +139,11 @@
     State.streak = Math.max(0, State.streak + delta);
     localStorage.setItem("nyc.streak", String(State.streak));
     document.getElementById("score-value").textContent = State.streak;
+    // Mirror into the in-quiz stats strip
+    const ps = document.getElementById("place-streak");
+    const hs = document.getElementById("hood-streak");
+    if (ps) ps.textContent = State.streak;
+    if (hs) hs.textContent = State.streak;
   }
   function shuffle(arr) {
     const a = arr.slice();
@@ -252,6 +257,7 @@
     if (State.place.remaining.length === 0) {
       State.place.remaining = shuffle(window.LANDMARKS.filter((l) => l.kind !== "neighborhood"));
     }
+    document.getElementById("place-streak").textContent = State.streak;
     nextPlace();
   }
   function clearPlaceOverlays() {
@@ -441,11 +447,13 @@
     }
   }
 
-  // ──────────────── HOOD QUIZ ────────────────
+  // ──────────────── NEIGHBORHOOD QUIZ ────────────────
   function initHoodQuiz() {
     setLabels(false);
     setZoomBounds(11, 14);
     map.setView([40.730, -73.980], 12);
+    document.getElementById("hood-rounds").textContent = State.hood.rounds;
+    document.getElementById("hood-streak").textContent = State.streak;
     nextHood();
   }
   function nextHood() {
@@ -466,7 +474,7 @@
 
     showHud(`
       <div class="hud-card">
-        <span class="ask">Name this hood</span>
+        <span class="ask">Name this neighborhood</span>
       </div>
       <div class="hud-choices" id="hud-hood-choices"></div>
     `);
@@ -492,6 +500,8 @@
     }
 
     flashSplash(correct ? "good" : "bad");
+    State.hood.rounds++;
+    document.getElementById("hood-rounds").textContent = State.hood.rounds;
 
     // Append result chip + next button
     const card = hud.querySelector(".hud-card");
@@ -502,7 +512,7 @@
     `;
     const row = document.createElement("div");
     row.className = "hud-row";
-    row.innerHTML = `<button class="chip-btn attract" id="hud-hood-next">Next hood ↗</button>`;
+    row.innerHTML = `<button class="chip-btn attract" id="hud-hood-next">Next neighborhood ↗</button>`;
     hud.appendChild(row);
     document.getElementById("hud-hood-next").onclick = nextHood;
   }

@@ -561,10 +561,10 @@ body {
 }
 
 /* ─────────────── Feedback splash ───────────────
-   A soft, low-saturation radial wash that fades in fast (~250ms) and
-   decays slow (~1.4s). Three muted earth tones — sage / amber / brick —
-   chosen to feel film-tinted rather than UI-bright, so they sit inside
-   TCW's mostly-monochrome system without screaming.
+   A frame-emanating vignette: an inset glow that hits the edges of the
+   viewport and fades inward. Three muted earth tones — sage / amber /
+   brick — picked to feel film-tinted rather than UI-bright so they sit
+   inside TCW's mostly-monochrome system without screaming.
    Element is fixed full-viewport; pointer-events:none so it never blocks. */
 .splash {
   position: fixed;
@@ -572,23 +572,28 @@ body {
   pointer-events: none;
   z-index: 9000;
   opacity: 0;
-  transform: scale(.96);
   mix-blend-mode: screen;     /* lifts the wash out of dark backgrounds */
 }
 [data-theme="light"] .splash { mix-blend-mode: multiply; }
 .splash.show {
-  animation: splash 1.6s var(--ease-out) forwards;
+  animation: splash 2.5s var(--ease-out) forwards;
 }
 @keyframes splash {
-  0%   { opacity: 0; transform: scale(.96); }
-  12%  { opacity: 1; transform: scale(1); }
-  28%  { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.06); }
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  40%  { opacity: 1; }
+  100% { opacity: 0; }
 }
-/* Color tones — kept low-alpha and softly desaturated. */
-.splash.good { background: radial-gradient(ellipse at center, rgba(146, 196, 168, .55), transparent 62%); }
-.splash.med  { background: radial-gradient(ellipse at center, rgba(220, 195, 145, .50), transparent 62%); }
-.splash.bad  { background: radial-gradient(ellipse at center, rgba(204, 130, 122, .55), transparent 62%); }
+/* Inset glow — color is strongest at the edge of the frame, decays
+   toward the center. Sized large so the falloff is gentle on big screens. */
+.splash.good { box-shadow: inset 0 0 240px 60px rgba(146, 196, 168, .75); }
+.splash.med  { box-shadow: inset 0 0 240px 60px rgba(220, 195, 145, .70); }
+.splash.bad  { box-shadow: inset 0 0 240px 60px rgba(204, 130, 122, .80); }
+@media (min-width: 1200px) {
+  .splash.good { box-shadow: inset 0 0 360px 90px rgba(146, 196, 168, .70); }
+  .splash.med  { box-shadow: inset 0 0 360px 90px rgba(220, 195, 145, .65); }
+  .splash.bad  { box-shadow: inset 0 0 360px 90px rgba(204, 130, 122, .75); }
+}
 
 /* ─────────────── Attention pulse on Next ───────────────
    A restrained right-nudge + background lift, looping every ~1.6s,
@@ -612,8 +617,8 @@ body {
 }
 
 /* ─────────────── Quiz-mode topbar collapse ───────────────
-   In Place / Hood quizzes the wordmark + status chips eat too much
-   vertical space — collapse the topbar to a slim row showing just
+   In Place / Neighborhood quizzes the wordmark + status chips eat too
+   much vertical space — collapse the topbar to a slim row showing just
    theme + streak. On mobile, hide it entirely (the modes-bar already
    says what mode you're in). */
 body.quiz-mode .topbar {
@@ -628,6 +633,75 @@ body.quiz-mode .topbar .chip-status { padding: 4px 8px; font-size: 11px; }
 body.quiz-mode .topbar .chip-nav { padding: 4px 10px; font-size: 13px; }
 @media (max-width: 960px) {
   body.quiz-mode .topbar { display: none; }
+}
+
+/* ─────────────── Quiz-mode panel collapse ───────────────
+   The interaction lives on the map; the panel becomes a single thin
+   row of stats so the map can take most of the screen. */
+body.quiz-mode #panel-place,
+body.quiz-mode #panel-hood {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 0;
+}
+body.quiz-mode #panel-place .section-head,
+body.quiz-mode #panel-place .lede,
+body.quiz-mode #panel-hood .section-head,
+body.quiz-mode #panel-hood .lede {
+  display: none;
+}
+body.quiz-mode .stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+body.quiz-mode .stats .stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+body.quiz-mode .stats dt {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: 11px;
+  letter-spacing: var(--tracking-ui);
+  text-transform: uppercase;
+  color: var(--fg-2);
+  margin: 0;
+}
+body.quiz-mode .stats dd {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: 14px;
+  letter-spacing: var(--tracking-display);
+  color: var(--fg-1);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* On mobile in quiz mode, the map fills almost everything; the stats
+   strip hugs its content at the bottom. */
+@media (max-width: 960px) {
+  body.quiz-mode .layout {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  body.quiz-mode #panel-place,
+  body.quiz-mode #panel-hood {
+    padding: var(--space-3);
+  }
+  body.quiz-mode .stats { gap: var(--space-4); }
+  body.quiz-mode .stats dd { font-size: 13px; }
+}
+
+/* On desktop in quiz mode, the right sidebar still exists but holds
+   only the slim stats strip — let it hug content rather than fixed-width. */
+@media (min-width: 961px) {
+  body.quiz-mode .layout {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  body.quiz-mode .sidebar { min-width: 280px; }
 }
 
 /* ─────────────── Map: Leaflet overrides ─────────────── */
