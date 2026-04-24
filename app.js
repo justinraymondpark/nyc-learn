@@ -111,7 +111,7 @@
       choices: [],         // easy-mode candidate landmarks (length 4)
       easyMarkers: [],     // easy-mode numbered markers
     },
-    hood:  { current: null, rounds: 0 },
+    hood:  { remaining: [], current: null, rounds: 0 },
     streak: Number(localStorage.getItem("nyc.streak") || 0),
   };
   document.getElementById("score-value").textContent = State.streak;
@@ -467,9 +467,20 @@
   function nextHood() {
     if (State.hoodLayer) { map.removeLayer(State.hoodLayer); State.hoodLayer = null; }
 
-    const pool = window.NEIGHBORHOODS;
-    const target = pool[Math.floor(Math.random() * pool.length)];
+    // Shuffle-and-pop so we don't repeat within a session. When the bag
+    // is empty, reshuffle — but avoid immediately re-serving the last one.
+    if (State.hood.remaining.length === 0) {
+      let deck = shuffle(window.NEIGHBORHOODS);
+      if (State.hood.current && deck[deck.length - 1].name === State.hood.current.name && deck.length > 1) {
+        // Swap the would-be-next with something else so it's never two in a row.
+        [deck[0], deck[deck.length - 1]] = [deck[deck.length - 1], deck[0]];
+      }
+      State.hood.remaining = deck;
+    }
+    const target = State.hood.remaining.pop();
     State.hood.current = target;
+
+    const pool = window.NEIGHBORHOODS;
 
     State.hoodLayer = L.polygon(target.poly, {
       color: lineColor(), weight: 1.5,

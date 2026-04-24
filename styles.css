@@ -262,14 +262,6 @@ body {
   font-weight: 300;
   color: var(--fg-1);
 }
-.legacy-link {
-  color: var(--fg-2);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border-divider);
-  margin-left: var(--space-2);
-  white-space: nowrap;
-}
-.legacy-link:hover { color: var(--fg-1); border-color: var(--fg-1); }
 
 .panel.hidden { display: none; }
 
